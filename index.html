@@ -146,7 +146,7 @@
                         const data = await response.json();
 
                         if (data.status === 'success' && data.product) {
-                            const productName = data.product.abbreviated_product_name || "Product name not available";
+                            const productName = data.product.product_name || "Product name not available";
                             barcodeResult.textContent = `Product: ${productName}`;
                         } else {
                             barcodeResult.textContent = "Product not found.";

@@ -159,9 +159,6 @@
                 const initialDeviceId = backCamera ? backCamera.deviceId : devices[0].deviceId;
                 await startCamera(initialDeviceId);
 
-                // Hide the camera selection dropdown initially after the first camera is set
-                cameraSelect.style.display = 'none';
-
             } catch (err) {
                 console.error(err);
                 barcodeResult.textContent = "Error initializing camera: " + err.message;

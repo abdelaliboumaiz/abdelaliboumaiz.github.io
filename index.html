@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +17,7 @@
             min-height: 100vh;
             background-color: #f4f4f9;
         }
+
         .scanner-container {
             text-align: center;
             background: #fff;
@@ -23,11 +25,13 @@
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         .scanner-container h1 {
             margin-bottom: 20px;
             font-size: 24px;
             color: #333;
         }
+
         #openCameraBtn {
             background: #007bff;
             color: #fff;
@@ -38,15 +42,18 @@
             cursor: pointer;
             transition: background-color 0.3s;
         }
+
         #openCameraBtn:hover {
             background: #0056b3;
         }
+
         video {
             width: 100%;
             max-width: 300px;
             margin: 20px auto;
             display: none;
         }
+
         #barcodeResult {
             margin-top: 20px;
             font-size: 18px;
@@ -54,10 +61,14 @@
         }
     </style>
 </head>
+
 <body>
     <div class="scanner-container">
         <h1>Barcode Scanner</h1>
         <button id="openCameraBtn"><i class="fas fa-camera"></i> Open Camera</button>
+        <select id="cameraSelect">
+            <!-- Options will be added dynamically -->
+        </select>
         <video id="video" autoplay></video>
         <div id="barcodeResult">Scan a barcode to see the result here.</div>
     </div>
@@ -72,39 +83,62 @@
 
         openCameraBtn.addEventListener('click', async () => {
             try {
-    barcodeResult.textContent = "Initializing camera...";
+                barcodeResult.textContent = "Initializing camera...";
 
-    const devices = await codeReader.listVideoInputDevices();
-    if (devices.length === 0) {
-        barcodeResult.textContent = "No camera found.";
-        return;
-    }
+                const devices = await codeReader.listVideoInputDevices();
+                if (devices.length === 0) {
+                    barcodeResult.textContent = "No camera found.";
+                    return;
+                }
 
-    // Identify front and back cameras
-    const frontCamera = devices.find(device => device.label.toLowerCase().includes('front'));
-    const backCamera = devices.find(device => device.label.toLowerCase().includes('back'));
+                // Create the dropdown for camera selection
+                const cameraSelect = document.getElementById('cameraSelect');
+                cameraSelect.innerHTML = ''; // Clear any existing options
 
-    // Default to back camera if available, otherwise use the first camera
-    const selectedDevice = backCamera || devices[0];
+                // Populate dropdown with available cameras
+                devices.forEach(device => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.textContent = device.label || `Camera ${device.deviceId}`;
+                    cameraSelect.appendChild(option);
+                });
 
-    // Optionally, add logic here for the user to choose front or back camera
-    // For simplicity, let's just use back camera by default
-    const selectedDeviceId = selectedDevice.deviceId;
+                // Set default camera as back camera if available
+                const backCamera = devices.find(device => device.label.toLowerCase().includes('back'));
+                if (backCamera) {
+                    cameraSelect.value = backCamera.deviceId; // Set back camera as default
+                }
 
-    await codeReader.decodeFromVideoDevice(selectedDeviceId, video, (result, error) => {
-        if (result) {
-            barcodeResult.textContent = `Barcode Detected: ${result.text}`;
-            codeReader.reset();
-        } else if (error) {
-            console.error(error);
-        }
-    });
+                // Listen for camera selection changes
+                cameraSelect.addEventListener('change', async () => {
+                    const selectedDeviceId = cameraSelect.value;
 
-    video.style.display = "block";
-} catch (err) {
-    console.error(err);
-    barcodeResult.textContent = "Error initializing camera: " + err.message;
-}
+                    // Start the camera with the selected device
+                    await startCamera(selectedDeviceId);
+                });
+
+                // Function to start the camera with the given device ID
+                const startCamera = async (deviceId) => {
+                    await codeReader.decodeFromVideoDevice(deviceId, video, (result, error) => {
+                        if (result) {
+                            barcodeResult.textContent = `Barcode Detected: ${result.text}`;
+                            codeReader.reset();
+                        } else if (error) {
+                            console.error(error);
+                        }
+                    });
+
+                    video.style.display = "block";
+                };
+
+                // Start with the default camera (back camera if found)
+                const initialDeviceId = backCamera ? backCamera.deviceId : devices[0].deviceId;
+                await startCamera(initialDeviceId);
+
+            } catch (err) {
+                console.error(err);
+                barcodeResult.textContent = "Error initializing camera: " + err.message;
+            }
 
         });
 
@@ -113,4 +147,5 @@
         });
     </script>
 </body>
+
 </html>

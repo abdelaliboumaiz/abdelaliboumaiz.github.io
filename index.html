@@ -72,29 +72,40 @@
 
         openCameraBtn.addEventListener('click', async () => {
             try {
-                barcodeResult.textContent = "Initializing camera...";
+    barcodeResult.textContent = "Initializing camera...";
 
-                const devices = await codeReader.listVideoInputDevices();
-                if (devices.length === 0) {
-                    barcodeResult.textContent = "No camera found.";
-                    return;
-                }
+    const devices = await codeReader.listVideoInputDevices();
+    if (devices.length === 0) {
+        barcodeResult.textContent = "No camera found.";
+        return;
+    }
 
-                const selectedDeviceId = devices[0].deviceId;
-                await codeReader.decodeFromVideoDevice(selectedDeviceId, video, (result, error) => {
-                    if (result) {
-                        barcodeResult.textContent = `Barcode Detected: ${result.text}`;
-                        codeReader.reset();
-                    } else if (error) {
-                        console.error(error);
-                    }
-                });
+    // Identify front and back cameras
+    const frontCamera = devices.find(device => device.label.toLowerCase().includes('front'));
+    const backCamera = devices.find(device => device.label.toLowerCase().includes('back'));
 
-                video.style.display = "block";
-            } catch (err) {
-                console.error(err);
-                barcodeResult.textContent = "Error initializing camera: " + err.message;
-            }
+    // Default to back camera if available, otherwise use the first camera
+    const selectedDevice = backCamera || devices[0];
+
+    // Optionally, add logic here for the user to choose front or back camera
+    // For simplicity, let's just use back camera by default
+    const selectedDeviceId = selectedDevice.deviceId;
+
+    await codeReader.decodeFromVideoDevice(selectedDeviceId, video, (result, error) => {
+        if (result) {
+            barcodeResult.textContent = `Barcode Detected: ${result.text}`;
+            codeReader.reset();
+        } else if (error) {
+            console.error(error);
+        }
+    });
+
+    video.style.display = "block";
+} catch (err) {
+    console.error(err);
+    barcodeResult.textContent = "Error initializing camera: " + err.message;
+}
+
         });
 
         window.addEventListener('beforeunload', () => {

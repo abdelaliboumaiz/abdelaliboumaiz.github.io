@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f9;
+        }
+        .scanner-container {
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .scanner-container h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #333;
+        }
+        #openCameraBtn {
+            background: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #openCameraBtn:hover {
+            background: #0056b3;
+        }
+        video {
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto;
+            display: none;
+        }
+        #barcodeResult {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanner-container">
+        <h1>Barcode Scanner</h1>
+        <button id="openCameraBtn"><i class="fas fa-camera"></i> Open Camera</button>
+        <video id="video" autoplay></video>
+        <div id="barcodeResult">Scan a barcode to see the result here.</div>
+    </div>
+
+    <script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
+    <script>
+        const openCameraBtn = document.getElementById('openCameraBtn');
+        const video = document.getElementById('video');
+        const barcodeResult = document.getElementById('barcodeResult');
+
+        const codeReader = new ZXing.BrowserMultiFormatReader();
+
+        openCameraBtn.addEventListener('click', async () => {
+            try {
+                barcodeResult.textContent = "Initializing camera...";
+
+                const devices = await codeReader.listVideoInputDevices();
+                if (devices.length === 0) {
+                    barcodeResult.textContent = "No camera found.";
+                    return;
+                }
+
+                const selectedDeviceId = devices[0].deviceId;
+                await codeReader.decodeFromVideoDevice(selectedDeviceId, video, (result, error) => {
+                    if (result) {
+                        barcodeResult.textContent = `Barcode Detected: ${result.text}`;
+                        codeReader.reset();
+                    } else if (error) {
+                        console.error(error);
+                    }
+                });
+
+                video.style.display = "block";
+            } catch (err) {
+                console.error(err);
+                barcodeResult.textContent = "Error initializing camera: " + err.message;
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            codeReader.reset();
+        });
+    </script>
+</body>
+</html>

@@ -115,13 +115,21 @@
 
                     // Start the camera with the selected device
                     await startCamera(selectedDeviceId);
+
+                    // Hide the camera selection dropdown after the user selects a camera
+                    cameraSelect.style.display = 'none';
                 });
 
                 // Function to start the camera with the given device ID
                 const startCamera = async (deviceId) => {
-                    await codeReader.decodeFromVideoDevice(deviceId, video, (result, error) => {
+                    await codeReader.decodeFromVideoDevice(deviceId, video, async (result, error) => {
                         if (result) {
-                            barcodeResult.textContent = `Barcode Detected: ${result.text}`;
+                            const barcode = result.text; // Get the barcode detected
+
+                            // Call the Open Food Facts API with the detected barcode
+                            await fetchProductInfo(barcode);
+
+                            // Reset the reader after a successful scan
                             codeReader.reset();
                         } else if (error) {
                             console.error(error);
@@ -131,9 +139,30 @@
                     video.style.display = "block";
                 };
 
+                // Function to call the Open Food Facts API and display the product information
+                const fetchProductInfo = async (barcode) => {
+                    try {
+                        const response = await fetch(`https://world.openfoodfacts.org/api/v3/product/${barcode}.json`);
+                        const data = await response.json();
+
+                        if (data.status === 1 && data.product) {
+                            const productName = data.product.abbreviated_product_name || "Product name not available";
+                            barcodeResult.textContent = `Product: ${productName}`;
+                        } else {
+                            barcodeResult.textContent = "Product not found.";
+                        }
+                    } catch (error) {
+                        console.error("Error fetching product info:", error);
+                        barcodeResult.textContent = "Error fetching product info.";
+                    }
+                };
+
                 // Start with the default camera (back camera if found)
                 const initialDeviceId = backCamera ? backCamera.deviceId : devices[0].deviceId;
                 await startCamera(initialDeviceId);
+
+                // Hide the camera selection dropdown initially after the first camera is set
+                cameraSelect.style.display = 'none';
 
             } catch (err) {
                 console.error(err);

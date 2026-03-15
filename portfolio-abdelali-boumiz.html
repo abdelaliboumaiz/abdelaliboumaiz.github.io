@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Abdelali BOUMIZ — Lead Software Engineer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@300;400;500;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04080f;--surface:rgba(10,18,30,0.85);--border:rgba(56,189,248,0.1);--border-h:rgba(56,189,248,0.32);
+  --cyan:#38bdf8;--lime:#a3e635;--amber:#fbbf24;--rose:#fb7185;--purple:#a78bfa;
+  --text:#e2eaf5;--muted:#5a7a99;
+  --ease:cubic-bezier(0.16,1,0.3,1);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Cabinet Grotesk',sans-serif;font-size:15px;line-height:1.7;overflow-x:hidden;cursor:none}
+
+/* CURSOR */
+#cur-dot,#cur-ring{position:fixed;top:0;left:0;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+#cur-dot{width:6px;height:6px;background:var(--cyan)}
+#cur-ring{width:30px;height:30px;border:1.5px solid rgba(56,189,248,0.45);transition:width .35s var(--ease),height .35s var(--ease),border-color .3s}
+body.hov #cur-ring{width:50px;height:50px;border-color:var(--cyan)}
+
+/* CANVAS */
+#cvs{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* GRID */
+.grid-bg{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(56,189,248,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.022) 1px,transparent 1px);background-size:64px 64px;pointer-events:none;mask-image:radial-gradient(ellipse 70% 70% at 50% 40%,black,transparent)}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 64px;background:rgba(4,8,15,.7);backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
+.nav-logo{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.nav-logo::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--lime);animation:blink 2.2s ease infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+.nav-links{display:flex;gap:36px}
+.nav-links a{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-decoration:none;letter-spacing:1.5px;text-transform:uppercase;transition:color .2s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:1px;background:var(--cyan);transform:scaleX(0);transition:transform .25s var(--ease)}
+.nav-links a:hover{color:var(--text)}
+.nav-links a:hover::after{transform:scaleX(1)}
+
+/* HERO */
+#hero{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;padding:66px 64px 0;overflow:hidden}
+.hero-glow{position:absolute;width:800px;height:800px;background:radial-gradient(circle,rgba(56,189,248,.065) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;animation:gp 7s ease-in-out infinite}
+@keyframes gp{0%,100%{opacity:.7;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}}
+.hero-grid{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 420px;gap:80px;align-items:center}
+.hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--lime);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:22px;opacity:0;animation:su .7s .1s var(--ease) forwards;display:flex;align-items:center;gap:8px}
+.hero-eyebrow::before{content:'> ';color:var(--cyan)}
+.hero-name{font-family:'Cabinet Grotesk',sans-serif;font-size:clamp(50px,6.5vw,92px);font-weight:800;line-height:.95;letter-spacing:-3px;margin-bottom:18px;opacity:0;animation:su .7s .2s var(--ease) forwards}
+.grad-text{background:linear-gradient(90deg,var(--cyan),var(--lime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-role{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:28px;opacity:0;animation:su .7s .3s var(--ease) forwards}
+.hero-desc{font-size:16px;color:rgba(226,234,245,.6);line-height:1.9;max-width:500px;margin-bottom:40px;opacity:0;animation:su .7s .4s var(--ease) forwards}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;opacity:0;animation:su .7s .5s var(--ease) forwards}
+.btn-p{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;background:linear-gradient(135deg,var(--cyan),#0ea5e9);color:#04080f;font-weight:700;font-size:13px;border-radius:9px;text-decoration:none;transition:transform .2s var(--ease),box-shadow .2s}
+.btn-p:hover{transform:translateY(-3px);box-shadow:0 0 35px rgba(56,189,248,.4)}
+.btn-g{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border:1px solid var(--border);color:var(--text);font-size:13px;border-radius:9px;text-decoration:none;transition:border-color .2s,background .2s}
+.btn-g:hover{border-color:var(--cyan);background:rgba(56,189,248,.05)}
+
+/* STAT CARDS */
+.hero-right{opacity:0;animation:sl .7s .5s var(--ease) forwards}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:26px 22px;backdrop-filter:blur(20px);transition:border-color .3s,transform .3s var(--ease);position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(56,189,248,.04),transparent 60%)}
+.stat-card:hover{border-color:var(--border-h);transform:translateY(-4px)}
+.stat-n{font-family:'Cabinet Grotesk',sans-serif;font-size:46px;font-weight:800;letter-spacing:-2px;background:linear-gradient(135deg,var(--cyan),var(--lime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.stat-l{font-size:11px;color:var(--muted);margin-top:6px;font-weight:500}
+
+@keyframes su{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes sl{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+
+/* LAYOUT */
+.wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:110px 64px}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:4px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:'//';color:var(--lime)}
+.sec-title{font-family:'Cabinet Grotesk',sans-serif;font-size:clamp(30px,4vw,50px);font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-bottom:56px}
+.divider{width:100vw;position:relative;left:50%;transform:translateX(-50%);height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent)}
+
+/* SCROLL REVEAL */
+.rv{opacity:0;transform:translateY(36px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
+.rv.vis{opacity:1;transform:translateY(0)}
+
+/* EXP CARDS */
+.exp-stack{display:flex;flex-direction:column;gap:22px}
+.exp-card{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:38px 42px;backdrop-filter:blur(20px);transition:border-color .35s,box-shadow .35s;position:relative;overflow:hidden;will-change:transform}
+.exp-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--lime));transform:scaleX(0);transform-origin:left;transition:transform .4s var(--ease)}
+.exp-card:hover{border-color:var(--border-h);box-shadow:0 28px 70px rgba(0,0,0,.45)}
+.exp-card:hover::after{transform:scaleX(1)}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+.co-row{display:flex;align-items:center;gap:10px;margin-bottom:5px}
+.co-name{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:2.5px;text-transform:uppercase}
+.co-loc{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.exp-role{font-family:'Cabinet Grotesk',sans-serif;font-size:21px;font-weight:700;letter-spacing:-.5px}
+.period{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:100px;padding:6px 14px;white-space:nowrap}
+.project{font-size:13px;color:rgba(163,230,53,.65);font-style:italic;margin-bottom:20px;padding-left:14px;border-left:2px solid rgba(163,230,53,.25)}
+.achievements{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:22px}
+.achievements li{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:rgba(226,234,245,.7);line-height:1.65}
+.ico{flex-shrink:0;width:20px;height:20px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;margin-top:3px}
+.ico-dev{background:rgba(56,189,248,.11);color:var(--cyan)}
+.ico-arch{background:rgba(163,230,53,.1);color:var(--lime)}
+.ico-ops{background:rgba(251,191,36,.1);color:var(--amber)}
+.ico-lead{background:rgba(167,139,250,.1);color:var(--purple)}
+
+/* AI BLOCK */
+.ai-block{background:linear-gradient(135deg,rgba(251,113,133,.07),rgba(56,189,248,.04));border:1px solid rgba(251,113,133,.18);border-radius:13px;padding:18px 20px;margin-bottom:20px}
+.ai-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--rose);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.ai-label::before{content:'◆';font-size:7px}
+.ai-block p{font-size:14px;color:rgba(226,234,245,.72);line-height:1.7}
+.ai-block strong{color:rgba(251,113,133,.85);font-weight:600}
+
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-family:'JetBrains Mono',monospace;font-size:9.5px;padding:4px 10px;border-radius:5px;transition:background .2s}
+.tb{background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.14);color:#7dd3fc}
+.tg{background:rgba(163,230,53,.06);border:1px solid rgba(163,230,53,.14);color:#bef264}
+.ta{background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.12);color:#fcd34d}
+.tr{background:rgba(251,113,133,.07);border:1px solid rgba(251,113,133,.15);color:#fda4af}
+.tp{background:rgba(167,139,250,.07);border:1px solid rgba(167,139,250,.14);color:#c4b5fd}
+
+/* BENTO */
+.bento{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+.bc{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;backdrop-filter:blur(20px);transition:border-color .3s,transform .3s var(--ease);position:relative;overflow:hidden}
+.bc:hover{border-color:var(--border-h);transform:translateY(-3px)}
+.bc .ci{font-size:28px;margin-bottom:14px;display:block}
+.bc .cc{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--cyan);letter-spacing:3px;text-transform:uppercase;margin-bottom:7px}
+.bc .ct{font-family:'Cabinet Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:13px}
+.pills{display:flex;flex-wrap:wrap;gap:5px}
+.pill{font-size:11px;padding:3px 9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:4px;color:rgba(226,234,245,.5)}
+.s4{grid-column:span 4}.s3{grid-column:span 3}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}
+.bai{background:linear-gradient(135deg,rgba(251,113,133,.08),rgba(56,189,248,.04));border-color:rgba(251,113,133,.2)}
+.bai .cc{color:var(--rose)}
+.bai .pill{background:rgba(251,113,133,.06);border-color:rgba(251,113,133,.12);color:#fda4af}
+
+/* EDU */
+.edu-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.edu-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 26px;display:flex;gap:18px;align-items:flex-start;transition:border-color .3s,transform .3s var(--ease)}
+.edu-card:hover{border-color:var(--border-h);transform:translateY(-3px)}
+.edu-yr{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);min-width:70px;padding-top:3px}
+.edu-deg{font-family:'Cabinet Grotesk',sans-serif;font-weight:700;font-size:14px;margin-bottom:3px}
+.edu-sch{font-size:12px;color:var(--muted)}
+
+/* META */
+.meta-row{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:50px}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;backdrop-filter:blur(20px);transition:border-color .3s,transform .3s var(--ease)}
+.mc:hover{border-color:var(--border-h);transform:translateY(-3px)}
+.mc-title{font-family:'Cabinet Grotesk',sans-serif;font-weight:700;font-size:15px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.mi{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(226,234,245,.6);padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.mi:last-child{border-bottom:none}
+.md{width:5px;height:5px;border-radius:50%;background:var(--lime);flex-shrink:0}
+
+footer{position:relative;z-index:1;text-align:center;padding:70px 64px;border-top:1px solid var(--border)}
+.ft-name{font-family:'Cabinet Grotesk',sans-serif;font-size:34px;font-weight:800;letter-spacing:-1px;background:linear-gradient(90deg,var(--cyan),var(--lime));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.ft-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:3px;text-transform:uppercase}
+
+@media(max-width:900px){
+  nav{padding:0 24px}.nav-links{display:none}
+  #hero{padding:80px 24px 40px}.hero-grid{grid-template-columns:1fr}.hero-right{display:none}
+  .wrap{padding:80px 24px}
+  .edu-grid{grid-template-columns:1fr}.meta-row{grid-template-columns:1fr}
+  .bento{grid-template-columns:1fr 1fr}.s4,.s3,.s5,.s7{grid-column:span 2}
+  .exp-card{padding:26px 22px} footer{padding:50px 24px}
+}
+</style>
+</head>
+<body>
+<div id="cur-dot"></div>
+<div id="cur-ring"></div>
+<canvas id="cvs"></canvas>
+<div class="grid-bg"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Abdelali BOUMIZ</div>
+  <div class="nav-links">
+    <a href="#xp">Expérience</a>
+    <a href="#sk">Compétences</a>
+    <a href="#ed">Formation</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-grid">
+    <div>
+      <div class="hero-eyebrow">Disponible · Toulouse, France · Permis B</div>
+      <h1 class="hero-name">Abdelali<br/><span class="grad-text">BOUMIZ</span></h1>
+      <p class="hero-role">Lead Software Engineer · Java / Angular · FullStack</p>
+      <p class="hero-desc">+6 ans d'expérience sur des projets critiques (MASA, Air France, Orange France). Expert architecture microservices, DevOps cloud-native et intégration de l'IA dans les workflows engineering.</p>
+      <div class="hero-btns">
+        <a href="mailto:abdelaliboumiz@gmail.com" class="btn-p">✉ Me contacter</a>
+        <a href="https://linkedin.com/in/abdelali-boumiz" target="_blank" class="btn-g">↗ LinkedIn</a>
+        <a href="tel:+33641864241" class="btn-g">+33 641 864 241</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-n">6+</div><div class="stat-l">Années d'expérience</div></div>
+        <div class="stat-card"><div class="stat-n">5</div><div class="stat-l">Missions grands comptes</div></div>
+        <div class="stat-card"><div class="stat-n" style="font-size:30px;line-height:1.2">Tech<br/>Lead</div><div class="stat-l">Architecture & Mentorat</div></div>
+        <div class="stat-card"><div class="stat-n" style="font-size:28px;line-height:1.2">AI<br/>Dev</div><div class="stat-l">Prompt Engineering appliqué</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- EXPERIENCE -->
+<div class="wrap" id="xp">
+  <div class="eyebrow rv">Parcours professionnel</div>
+  <h2 class="sec-title rv">Expériences<br/>& Réalisations</h2>
+
+  <div class="exp-stack">
+
+    <!-- ATOS -->
+    <div class="exp-card rv">
+      <div class="card-head">
+        <div>
+          <div class="co-row"><span class="co-name">ATOS FRANCE</span><span class="co-loc">· Toulouse</span></div>
+          <div class="exp-role">Technical Team Leader</div>
+        </div>
+        <div class="period">Jan. 2025 → Présent</div>
+      </div>
+      <div class="project">Projet MASA — Ministère de l'Agriculture et de la Souveraineté Alimentaire · Application de gestion des classes et sections pour les années scolaires</div>
+      <ul class="achievements">
+        <li><div class="ico ico-arch">◈</div><span>Conception de l'architecture technique complète from scratch, choix des technologies et définition des standards adaptés aux exigences ministérielles.</span></li>
+        <li><div class="ico ico-ops">⚙</div><span>Mise en place de l'environnement DevOps complet : configuration GitLab, intégration GitLab Runner + SonarQube, pipelines CI/CD automatisés DEV → RCT → PROD, gestion des migrations Liquibase.</span></li>
+        <li><div class="ico ico-dev">⬡</div><span>Développement des modules métier critiques en Java 21, Spring Boot, Spring Batch, RabbitMQ, déploiement Kubernetes/Helm avec orchestration des environnements.</span></li>
+        <li><div class="ico ico-lead">★</div><span>Encadrement technique de l'équipe : revues de code approfondies, mentorat quotidien, planification des sprints, documentation d'architecture complète.</span></li>
+      </ul>
+      <div class="ai-block">
+        <div class="ai-label">Prompt Engineering — IA Générative au service du delivery</div>
+        <p>Utilisation avancée de <strong>GitHub Copilot et ChatGPT via des prompts structurés</strong> pour générer des boilerplates Java/Angular conformes aux conventions du projet, <strong>produire automatiquement des suites de tests JUnit/Mockito à partir des specs fonctionnelles</strong>, rédiger la documentation d'architecture et accélérer le troubleshooting des configurations Kubernetes/Helm complexes — réduisant le time-to-delivery sur les tâches récurrentes de l'équipe.</p>
+      </div>
+      <div class="tags">
+        <span class="tag tb">Java 21</span><span class="tag tb">Spring Boot</span><span class="tag tb">Spring Security</span><span class="tag tb">JWT</span><span class="tag tb">JPA / Liquibase</span><span class="tag tb">Spring Batch</span><span class="tag tb">RabbitMQ</span><span class="tag tb">Feign Client</span>
+        <span class="tag tg">Angular 20</span><span class="tag tg">TypeScript</span>
+        <span class="tag ta">Kubernetes</span><span class="tag ta">Helm</span><span class="tag ta">GitLab CI/CD</span><span class="tag ta">SonarQube</span><span class="tag ta">Docker</span><span class="tag ta">PostgreSQL</span><span class="tag ta">LogStack / Kibana</span><span class="tag ta">jMeter</span>
+        <span class="tag tr">Prompt Engineering</span><span class="tag tp">Agile Scrum</span>
+      </div>
+    </div>
+
+    <!-- CAPGEMINI FRANCE -->
+    <div class="exp-card rv">
+      <div class="card-head">
+        <div>
+          <div class="co-row"><span class="co-name">CAPGEMINI FRANCE</span><span class="co-loc">· Toulouse</span></div>
+          <div class="exp-role">Software Engineer Lead — Tech Lead</div>
+        </div>
+        <div class="period">Déc. 2022 → Jan. 2025</div>
+      </div>
+      <div class="project">Projet LOGOPS BUILD — Application de logistique opérationnelle pour les mécaniciens d'ingénierie Air France</div>
+      <ul class="achievements">
+        <li><div class="ico ico-arch">◈</div><span>Conception de l'architecture microservices distribuée : patterns d'intégration, Kafka event-driven, Feign Client, API Gateway — garantissant la scalabilité pour un usage critique en production.</span></li>
+        <li><div class="ico ico-ops">⚙</div><span>Infrastructure as Code avec Terraform sur Azure, pipelines GitHub Actions, stack de logs centralisée Kafka → Logstash → Kibana pour la traçabilité complète des événements.</span></li>
+        <li><div class="ico ico-dev">⬡</div><span>Tests de charge jMeter multi-scénarios (simulation utilisateurs), identification et résolution des goulots d'étranglement, migration des bases de données legacy vers PostgreSQL.</span></li>
+        <li><div class="ico ico-lead">★</div><span>Onboarding des nouvelles recrues, normes de codage, animations des cérémonies Agile Scrum, collaboration inter-équipes (conception, QA, ops).</span></li>
+      </ul>
+      <div class="ai-block">
+        <div class="ai-label">Prompt Engineering — IA intégrée au workflow d'équipe</div>
+        <p>Adoption du Prompt Engineering comme pratique d'équipe : utilisation de <strong>LLMs (GitHub Copilot, Claude) via des prompts ciblés</strong> pour <strong>générer automatiquement des cas de tests JUnit/Mockito</strong> à partir des User Stories, accélérer la rédaction des spécifications techniques, produire des scripts Terraform optimisés et identifier des améliorations de performance PostgreSQL — contribuant à augmenter la couverture de tests et réduire la charge sur les tâches à faible valeur ajoutée.</p>
+      </div>
+      <div class="tags">
+        <span class="tag tb">Java 17</span><span class="tag tb">Spring Boot</span><span class="tag tb">Spring Batch</span><span class="tag tb">JWT</span><span class="tag tb">JPA / Liquibase</span><span class="tag tb">Feign Client</span>
+        <span class="tag tg">Angular 17</span><span class="tag tg">TypeScript</span>
+        <span class="tag ta">Kubernetes</span><span class="tag ta">Helm</span><span class="tag ta">Terraform</span><span class="tag ta">Azure Cloud</span><span class="tag ta">GitHub Actions</span><span class="tag ta">Kafka</span><span class="tag ta">HermesJMS</span><span class="tag ta">SonarQube</span><span class="tag ta">jMeter</span>
+        <span class="tag tr">Prompt Engineering</span><span class="tag tp">Agile Scrum</span>
+      </div>
+    </div>
+
+    <!-- SOFRECOM -->
+    <div class="exp-card rv">
+      <div class="card-head">
+        <div>
+          <div class="co-row"><span class="co-name">SOFRECOM MAROC</span><span class="co-loc">· Casablanca</span></div>
+          <div class="exp-role">Software Engineer Lead FullStack — Microservices</div>
+        </div>
+        <div class="period">Juin 2021 → Déc. 2022</div>
+      </div>
+      <div class="project">Projet Outillage Catalogue — Orange France · Architecture multi-modules microservices</div>
+      <ul class="achievements">
+        <li><div class="ico ico-dev">⬡</div><span>Développement de nouvelles fonctionnalités Java Spring Boot / Angular en microservices ; mise en place de la gestion centralisée des traitements asynchrones (retry, déduplication, monitoring temps réel).</span></li>
+        <li><div class="ico ico-ops">⚙</div><span>Pipelines CI/CD GitLab + Ansible, migrations Oracle DB, résolution de bugs critiques en production, rédaction des specs fonctionnelles et techniques.</span></li>
+        <li><div class="ico ico-lead">★</div><span>Estimation des User Stories, encadrement des juniors, animations des rétrospectives et cérémonies Agile Scrum.</span></li>
+      </ul>
+      <div class="tags">
+        <span class="tag tb">Java 11</span><span class="tag tb">Spring Cloud</span><span class="tag tb">Spring Batch</span><span class="tag tb">JWT</span><span class="tag tb">Feign Client</span>
+        <span class="tag tg">Angular 13</span>
+        <span class="tag ta">Oracle DB</span><span class="tag ta">GitLab CI/CD</span><span class="tag ta">Ansible</span><span class="tag ta">Azure Cloud</span>
+        <span class="tag tp">Agile Scrum</span>
+      </div>
+    </div>
+
+    <!-- CAPGEMINI CASA 1 -->
+    <div class="exp-card rv">
+      <div class="card-head">
+        <div>
+          <div class="co-row"><span class="co-name">CAPGEMINI</span><span class="co-loc">· Casablanca</span></div>
+          <div class="exp-role">Software Engineer FullStack — Microservices</div>
+        </div>
+        <div class="period">Août 2020 → Juin 2021</div>
+      </div>
+      <div class="project">OMPIC — Automatisation des demandes de dénomination commerciale · Projet initialisé from scratch</div>
+      <ul class="achievements">
+        <li><div class="ico ico-arch">◈</div><span>Initialisation complète du projet Java SpringBoot / Angular microservices from scratch, mise en place de l'infrastructure technique (serveurs, bases de données, outils de développement).</span></li>
+        <li><div class="ico ico-dev">⬡</div><span>Développement TDD, tests unitaires et d'intégration, documentation technique complète, déploiement en environnement de recette.</span></li>
+      </ul>
+      <div class="tags">
+        <span class="tag tb">Java 8</span><span class="tag tb">Spring Cloud</span><span class="tag tb">Keycloak</span><span class="tag tb">Spring Batch</span>
+        <span class="tag tg">Angular 8</span>
+        <span class="tag ta">Kubernetes</span><span class="tag ta">Azure</span><span class="tag ta">Oracle DB</span><span class="tag ta">Minio</span><span class="tag ta">Jasper Report</span>
+        <span class="tag tp">TDD</span>
+      </div>
+    </div>
+
+    <!-- CAPGEMINI CASA 2 -->
+    <div class="exp-card rv">
+      <div class="card-head">
+        <div>
+          <div class="co-row"><span class="co-name">CAPGEMINI</span><span class="co-loc">· Casablanca</span></div>
+          <div class="exp-role">Software Engineer FullStack</div>
+        </div>
+        <div class="period">Avr. 2019 → Juil. 2020</div>
+      </div>
+      <div class="project">TMA — COLONNA FACILITY · Secteur assurance</div>
+      <ul class="achievements">
+        <li><div class="ico ico-dev">⬡</div><span>Développement et maintenance des fonctionnalités front-end et back-end, optimisation des performances, revues de code, onboarding des nouvelles ressources.</span></li>
+        <li><div class="ico ico-dev">⬡</div><span>Tests unitaires, tests d'intégration, tests de non-régression, gestion des activités TMA selon les exigences du projet.</span></li>
+      </ul>
+      <div class="tags">
+        <span class="tag tb">Java 8</span><span class="tag tb">Spring Boot</span><span class="tag tb">Spring Batch</span><span class="tag tg">Angular</span><span class="tag ta">MySQL</span><span class="tag ta">JWT</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- SKILLS -->
+<div class="wrap" id="sk">
+  <div class="eyebrow rv">Savoir-faire</div>
+  <h2 class="sec-title rv">Stack &<br/>Compétences</h2>
+  <div class="bento">
+    <div class="bc s4 rv"><span class="ci">☕</span><div class="cc">Backend</div><div class="ct">Java & Ecosystem</div><div class="pills"><span class="pill">Java 17/21</span><span class="pill">Jakarta EE</span><span class="pill">Spring Boot</span><span class="pill">Spring Cloud</span><span class="pill">Spring Security</span><span class="pill">Spring Batch</span><span class="pill">JPA/Hibernate</span><span class="pill">Quarkus</span><span class="pill">Micronaut</span></div></div>
+    <div class="bc s4 rv"><span class="ci">⚡</span><div class="cc">Frontend</div><div class="ct">Angular & Web</div><div class="pills"><span class="pill">Angular 17/20</span><span class="pill">TypeScript</span><span class="pill">RxJS</span><span class="pill">NgRx</span><span class="pill">TailwindCSS</span><span class="pill">Bootstrap</span><span class="pill">RGAA</span></div></div>
+    <div class="bc s4 rv"><span class="ci">🏗</span><div class="cc">Architecture</div><div class="ct">Design & Patterns</div><div class="pills"><span class="pill">Microservices</span><span class="pill">REST / GraphQL</span><span class="pill">Event-Driven</span><span class="pill">DDD</span><span class="pill">Clean Architecture</span><span class="pill">WebFlux</span><span class="pill">API Gateway</span></div></div>
+    <div class="bc s5 rv"><span class="ci">☁</span><div class="cc">Cloud & DevOps</div><div class="ct">Infrastructure & CI/CD</div><div class="pills"><span class="pill">Docker</span><span class="pill">Kubernetes</span><span class="pill">Helm</span><span class="pill">Azure</span><span class="pill">OpenShift</span><span class="pill">Terraform</span><span class="pill">GitLab CI/CD</span><span class="pill">GitHub Actions</span><span class="pill">Jenkins</span><span class="pill">SonarQube</span></div></div>
+    <div class="bc s3 rv"><span class="ci">🗄</span><div class="cc">Data & Messaging</div><div class="ct">Stockage & Events</div><div class="pills"><span class="pill">PostgreSQL</span><span class="pill">Oracle</span><span class="pill">MySQL</span><span class="pill">MongoDB</span><span class="pill">Redis</span><span class="pill">Kafka</span><span class="pill">RabbitMQ</span><span class="pill">Elasticsearch</span></div></div>
+    <div class="bc s4 bai rv"><span class="ci">🤖</span><div class="cc">IA & Productivité</div><div class="ct">Prompt Engineering</div><div class="pills"><span class="pill">GitHub Copilot</span><span class="pill">ChatGPT / Claude</span><span class="pill">Génération de code</span><span class="pill">Tests automatisés</span><span class="pill">Rédaction de specs</span><span class="pill">Debugging IA</span><span class="pill">Optimisation SQL</span></div></div>
+    <div class="bc s4 rv"><span class="ci">📊</span><div class="cc">Observabilité</div><div class="ct">Monitoring & Logs</div><div class="pills"><span class="pill">ELK Stack</span><span class="pill">Kibana</span><span class="pill">Logstash</span><span class="pill">Prometheus</span><span class="pill">Grafana</span><span class="pill">jMeter</span></div></div>
+    <div class="bc s4 rv"><span class="ci">🧪</span><div class="cc">Tests & Qualité</div><div class="ct">Assurance Qualité</div><div class="pills"><span class="pill">JUnit 5</span><span class="pill">Mockito</span><span class="pill">Testcontainers</span><span class="pill">Pact</span><span class="pill">Selenium</span><span class="pill">TDD / BDD</span></div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- EDUCATION -->
+<div class="wrap" id="ed">
+  <div class="eyebrow rv">Académique</div>
+  <h2 class="sec-title rv">Formation &<br/>Certifications</h2>
+  <div class="edu-grid">
+    <div class="edu-card rv"><div class="edu-yr">2024</div><div><div class="edu-deg">Attestation de comparabilité de Master spécialisé</div><div class="edu-sch">France Éducation Internationale</div></div></div>
+    <div class="edu-card rv"><div class="edu-yr">2017–2019</div><div><div class="edu-deg">Master — Qualité du Logiciel</div><div class="edu-sch">Faculté des Sciences Dhar Al Mahraz, Fès</div></div></div>
+    <div class="edu-card rv"><div class="edu-yr">2016–2017</div><div><div class="edu-deg">Licence Pro — Développement des SI & Communication</div><div class="edu-sch">École Supérieure de Technologie, Meknès</div></div></div>
+    <div class="edu-card rv"><div class="edu-yr">2014–2016</div><div><div class="edu-deg">DUT — Génie Informatique, Génie Logiciel</div><div class="edu-sch">École Supérieure de Technologie, Meknès</div></div></div>
+  </div>
+  <div class="meta-row">
+    <div class="mc rv"><div class="mc-title">🏅 Certifications</div><div class="mi"><div class="md"></div>AZ-900 · Microsoft Azure Fundamentals</div><div class="mi"><div class="md"></div>Scrum Foundation Professional (SFPC)</div></div>
+    <div class="mc rv"><div class="mc-title">🌐 Langues</div><div class="mi"><div class="md"></div>Français — Courant</div><div class="mi"><div class="md"></div>Anglais — Professionnel</div><div class="mi"><div class="md"></div>Arabe — Natif</div></div>
+    <div class="mc rv"><div class="mc-title">✦ Intérêts</div><div class="mi"><div class="md"></div>Développement Mobile — Kotlin</div><div class="mi"><div class="md"></div>Coding Challenges · Football</div><div class="mi"><div class="md"></div>Gaming · Do-It-Yourself</div></div>
+  </div>
+</div>
+
+<footer>
+  <div class="ft-name">Abdelali BOUMIZ</div>
+  <div class="ft-sub">Lead Software Engineer · Toulouse · 2026</div>
+</footer>
+
+<script>
+/* ── Cursor ── */
+const dot=document.getElementById('cur-dot'),ring=document.getElementById('cur-ring');
+let mx=-200,my=-200,rx=-200,ry=-200;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+document.querySelectorAll('a,button,.exp-card,.bc,.stat-card,.edu-card,.mc').forEach(el=>{
+  el.addEventListener('mouseenter',()=>document.body.classList.add('hov'));
+  el.addEventListener('mouseleave',()=>document.body.classList.remove('hov'));
+});
+(function cursorLoop(){
+  dot.style.left=mx+'px';dot.style.top=my+'px';
+  rx+=(mx-rx)*0.11;ry+=(my-ry)*0.11;
+  ring.style.left=rx+'px';ring.style.top=ry+'px';
+  requestAnimationFrame(cursorLoop);
+})();
+
+/* ── Particles ── */
+const cvs=document.getElementById('cvs'),c=cvs.getContext('2d');
+let W,H;
+function rsz(){W=cvs.width=window.innerWidth;H=cvs.height=window.innerHeight}rsz();
+window.addEventListener('resize',rsz);
+let pmx=W/2,pmy=H/2;
+document.addEventListener('mousemove',e=>{pmx=e.clientX;pmy=e.clientY});
+const pts=Array.from({length:110},()=>({
+  x:Math.random()*9999,y:Math.random()*9999,
+  vx:(Math.random()-.5)*.28,vy:(Math.random()-.5)*.28,
+  r:Math.random()*1.1+.3,
+  a:Math.random()*.35+.05,
+  col:Math.random()>.55?'56,189,248':'163,230,53'
+}));
+pts.forEach(p=>{p.x=Math.random()*W;p.y=Math.random()*H});
+(function loop(){
+  c.clearRect(0,0,W,H);
+  pts.forEach(p=>{
+    const dx=pmx-p.x,dy=pmy-p.y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<200){p.vx+=dx/d*.007;p.vy+=dy/d*.007;p.vx*=.97;p.vy*=.97}
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0||p.x>W)p.vx*=-1;
+    if(p.y<0||p.y>H)p.vy*=-1;
+    c.beginPath();c.arc(p.x,p.y,p.r,0,Math.PI*2);
+    c.fillStyle=`rgba(${p.col},${p.a})`;c.fill();
+  });
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+    const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+    if(d<85){c.beginPath();c.moveTo(pts[i].x,pts[i].y);c.lineTo(pts[j].x,pts[j].y);c.strokeStyle=`rgba(56,189,248,${.055*(1-d/85)})`;c.lineWidth=.5;c.stroke()}
+  }
+  requestAnimationFrame(loop);
+})();
+
+/* ── Scroll Reveal ── */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('vis'),i*55);obs.unobserve(e.target)}});
+},{threshold:.07});
+document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+
+/* ── Card tilt ── */
+document.querySelectorAll('.exp-card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`translateY(-5px) rotateX(${-y*3.5}deg) rotateY(${x*3.5}deg)`;
+  });
+  card.addEventListener('mouseleave',()=>card.style.transform='');
+});
+</script>
+</body>
+</html>
